@@ -38,13 +38,9 @@ internal class DiscordMessageSender
         {
             builder.WithTitle($"{username} has set a new personal best!");
         }
-        else if (!record.IsValid)
-        {
-            builder.WithTitle($"{username} has set a new any% run!");
-        }
         else
         {
-            builder.WithTitle($"{username} has set a new run!");
+            return;
         }
 
         builder.WithAuthor("Zeepkist GTR",
