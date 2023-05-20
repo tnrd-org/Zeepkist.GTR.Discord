@@ -25,6 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Zeepkist.GTR.DTOs\Zeepkist.GTR.DTOs.csproj" />
+        <PackageReference Condition="'$(Configuration)' != 'Debug'" Include="TNRD.Zeepkist.GTR.DTOs" Version="2.9.0" />
+        <ProjectReference Condition="'$(Configuration)' == 'Debug'" Include="..\Zeepkist.GTR.DTOs\Zeepkist.GTR.DTOs.csproj" />
     </ItemGroup>
 </Project>
