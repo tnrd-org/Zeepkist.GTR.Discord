@@ -34,10 +34,6 @@ internal class DiscordMessageSender
         {
             builder.WithTitle($"{username} has set a new world record!");
         }
-        else if (record.IsBest)
-        {
-            builder.WithTitle($"{username} has set a new personal best!");
-        }
         else
         {
             return;
