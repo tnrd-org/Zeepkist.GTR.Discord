@@ -25,20 +25,15 @@ internal class DiscordMessageSender
         if (Settings.Channel == null)
             return;
 
+        if (!record.IsWorldRecord)
+            return;
+
         string username = await GetUsername(record);
         (string? level, string? thumbnailUrl) = await GetTrackString(record);
 
         EmbedBuilder builder = new EmbedBuilder();
 
-        if (record.IsWorldRecord)
-        {
-            builder.WithTitle($"{username} has set a new world record!");
-        }
-        else
-        {
-            return;
-        }
-
+        builder.WithTitle($"{username} has set a new world record!");
         builder.WithAuthor("Zeepkist GTR",
             "https://zeepkist-gtr.com",
             "https://cdn.discordapp.com/avatars/1106610501674348554/b60163ed3528ab1864fa4466830b2e0b.webp?size=128");
