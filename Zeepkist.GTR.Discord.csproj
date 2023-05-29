@@ -15,17 +15,9 @@
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="Remora.Discord" Version="2023.3.0" />
         <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
+        <PackageReference Include="TNRD.Zeepkist.GTR.Database" Version="1.1.0" />
         <PackageReference Include="Websocket.Client" Version="4.6.1" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Include="..\..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Condition="'$(Configuration)' != 'Debug'" Include="TNRD.Zeepkist.GTR.DTOs" Version="2.9.0" />
+        <PackageReference Condition="'$(Configuration)' != 'Debug'" Include="TNRD.Zeepkist.GTR.DTOs" Version="3.7.1" />
         <ProjectReference Condition="'$(Configuration)' == 'Debug'" Include="..\Zeepkist.GTR.DTOs\Zeepkist.GTR.DTOs.csproj" />
     </ItemGroup>
 </Project>

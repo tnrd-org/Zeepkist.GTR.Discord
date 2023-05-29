@@ -1,5 +1,6 @@
 ﻿using System.Net.WebSockets;
 using Newtonsoft.Json;
+using TNRD.Zeepkist.GTR.DTOs.Rabbit;
 using Websocket.Client;
 
 namespace TNRD.Zeepkist.GTR.Discord;
@@ -18,7 +19,7 @@ internal class WebSocketHostedService : IHostedService
 
     private void OnMessage(ResponseMessage responseMessage)
     {
-        PublishableRecord? publishableRecord = JsonConvert.DeserializeObject<PublishableRecord>(responseMessage.Text);
+        RecordId? publishableRecord = JsonConvert.DeserializeObject<RecordId>(responseMessage.Text);
         discordMessageSender.SendMessage(publishableRecord);
     }
 

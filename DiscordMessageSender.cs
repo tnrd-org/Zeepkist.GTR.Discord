@@ -1,10 +1,14 @@
 ﻿using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
 using Remora.Discord.API.Objects;
 using Remora.Discord.Extensions.Embeds;
 using Remora.Results;
+using TNRD.Zeepkist.GTR.Database;
+using TNRD.Zeepkist.GTR.Database.Models;
+using TNRD.Zeepkist.GTR.DTOs.Rabbit;
 using TNRD.Zeepkist.GTR.DTOs.ResponseModels;
 
 namespace TNRD.Zeepkist.GTR.Discord;
@@ -13,19 +17,34 @@ internal class DiscordMessageSender
 {
     private readonly IDiscordRestChannelAPI channelApi;
     private readonly HttpClient httpClient;
+    private readonly GTRContext context;
 
-    public DiscordMessageSender(IDiscordRestChannelAPI channelApi, HttpClient httpClient)
+    public DiscordMessageSender(IDiscordRestChannelAPI channelApi, HttpClient httpClient, GTRContext context)
     {
         this.channelApi = channelApi;
         this.httpClient = httpClient;
+        this.context = context;
     }
 
-    public async void SendMessage(PublishableRecord record)
+    public async void SendMessage(RecordId? recordId)
     {
         if (Settings.Channel == null)
             return;
 
-        if (!record.IsWorldRecord)
+        if (recordId == null)
+            return;
+
+        Record? record = await context.Records.AsNoTracking()
+            .Where(x => x.Id == recordId.Id)
+            .FirstOrDefaultAsync();
+
+        if (record == null)
+            return;
+
+        if (!record.IsWr)
+            return;
+
+        if (string.IsNullOrEmpty(record.ScreenshotUrl))
             return;
 
         string username = await GetUsername(record);
@@ -41,7 +60,7 @@ internal class DiscordMessageSender
         builder.WithImageUrl(GetScreenshotUrl(record));
 
         builder.AddField("Level", level);
-        builder.AddField("Time", GetFormattedTime(record.Time));
+        builder.AddField("Time", GetFormattedTime(record.Time!.Value));
         builder.AddField("Splits",
             string.Join(", ", record.Splits?.Select(x => GetFormattedTime(x)) ?? Array.Empty<string>()));
 
@@ -56,14 +75,14 @@ internal class DiscordMessageSender
             });
     }
 
-    private async Task<string> GetUsername(PublishableRecord record)
+    private async Task<string> GetUsername(Record record)
     {
         string json = await httpClient.GetStringAsync($"https://api.zeepkist-gtr.com/users/{record.User}");
         UserResponseModel? user = JsonConvert.DeserializeObject<UserResponseModel>(json);
         return user?.SteamName ?? "Unknown";
     }
 
-    private async Task<(string level, string thumbnailUrl)> GetTrackString(PublishableRecord record)
+    private async Task<(string level, string thumbnailUrl)> GetTrackString(Record record)
     {
         string json = await httpClient.GetStringAsync($"https://api.zeepkist-gtr.com/levels/{record.Level}");
         LevelResponseModel? level = JsonConvert.DeserializeObject<LevelResponseModel>(json);
@@ -101,9 +120,9 @@ internal class DiscordMessageSender
         return newUrl;
     }
 
-    private static string GetScreenshotUrl(PublishableRecord record)
+    private static string GetScreenshotUrl(Record record)
     {
-        if (record.ScreenshotUrl.StartsWith("https://storage.googleapis.com/zeepkist-gtr/screenshots/"))
+        if (record.ScreenshotUrl!.StartsWith("https://storage.googleapis.com/zeepkist-gtr/screenshots/"))
             return record.ScreenshotUrl;
 
         string newUrl = record.ScreenshotUrl.Replace(
