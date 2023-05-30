@@ -84,7 +84,7 @@ internal class DiscordMessageSender
             Result<Embed> embed = builder.Build();
             if (!embed.IsSuccess)
             {
-                logger.LogError("Failed to build embed: {Error}", embed.ToString());
+                logger.LogError("Failed to build embed: {Error}", embed.Error.ToString());
                 return;
             }
 
@@ -96,7 +96,7 @@ internal class DiscordMessageSender
 
             if (!result.IsSuccess)
             {
-                logger.LogError("Failed to send message to Discord: {Error}", result.ToString());
+                logger.LogError("Failed to send message to Discord: {Error}", result.Error.ToString());
             }
             else
             {
