@@ -13,7 +13,7 @@ internal class WebSocketHostedService : IHostedService
     public WebSocketHostedService(DiscordMessageSender discordMessageSender)
     {
         this.discordMessageSender = discordMessageSender;
-        client = new WebsocketClient(new Uri("wss://stream.zeepkist-gtr.com/ws"));
+        client = new WebsocketClient(new Uri("wss://stream.dev.zeepkist-gtr.com/ws"));
         client.MessageReceived.Subscribe(OnMessage);
     }
 
