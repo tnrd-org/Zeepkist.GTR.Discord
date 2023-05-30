@@ -38,80 +38,67 @@ internal class DiscordMessageSender
 
     public async void SendMessage(RecordId? recordId)
     {
-        if (Settings.Channel == null)
-            return;
-
-        if (recordId == null)
-            return;
-
-        if (sentRecords.Contains(recordId.Id))
-            return;
-
-        logger.LogInformation("Getting from DB");
-        
-        Record? record = await context.Records.AsNoTracking()
-            .Where(x => x.Id == recordId.Id)
-            .FirstOrDefaultAsync();
-
-        logger.LogInformation("Found record: {Record}", record?.Id ?? -1);
-        
-        if (record == null)
-            return;
-
-        logger.LogInformation("Checking for WR");
-
-        if (!record.IsWr)
+        try
         {
-            logger.LogInformation("Not a wr");
-            return;
-        }
+            if (Settings.Channel == null)
+                return;
 
-        logger.LogInformation("Checking for screenshot url");
+            if (recordId == null)
+                return;
 
-        if (string.IsNullOrEmpty(record.ScreenshotUrl))
-        {
-            logger.LogInformation("No screenshot url");
-            return;
-        }
+            if (sentRecords.Contains(recordId.Id))
+                return;
 
-        sentRecords.Add(record.Id);
+            Record? record = await context.Records.AsNoTracking()
+                .Where(x => x.Id == recordId.Id)
+                .FirstOrDefaultAsync();
 
-        string username = await GetUsername(record);
-        (string? level, string? thumbnailUrl) = await GetTrackString(record);
+            if (record == null)
+                return;
 
-        EmbedBuilder builder = new EmbedBuilder();
+            if (!record.IsWr)
+                return;
 
-        builder.WithTitle($"{username} has set a new world record!");
-        builder.WithAuthor("Zeepkist GTR",
-            "https://zeepkist-gtr.com",
-            "https://cdn.discordapp.com/avatars/1106610501674348554/b60163ed3528ab1864fa4466830b2e0b.webp?size=128");
-        builder.WithThumbnailUrl(GetThumbnailUrl(thumbnailUrl));
-        builder.WithImageUrl(GetScreenshotUrl(record));
+            if (string.IsNullOrEmpty(record.ScreenshotUrl))
+                return;
 
-        builder.AddField("Level", level);
-        builder.AddField("Time", GetFormattedTime(record.Time!.Value));
-        builder.AddField("Splits",
-            string.Join(", ", record.Splits?.Select(x => GetFormattedTime(x)) ?? Array.Empty<string>()));
+            sentRecords.Add(record.Id);
 
-        logger.LogInformation("Creating embed");
-        Result<Embed> embed = builder.Build();
-        if (!embed.IsSuccess)
-            return;
+            string username = await GetUsername(record);
+            (string? level, string? thumbnailUrl) = await GetTrackString(record);
 
-        logger.LogError("Sending message to Discord");
-        Result<IMessage> result = await channelApi.CreateMessageAsync(Settings.Channel.ID,
-            embeds: new List<IEmbed>()
+            EmbedBuilder builder = new EmbedBuilder();
+
+            builder.WithTitle($"{username} has set a new world record!");
+            builder.WithAuthor("Zeepkist GTR",
+                "https://zeepkist-gtr.com",
+                "https://cdn.discordapp.com/avatars/1106610501674348554/b60163ed3528ab1864fa4466830b2e0b.webp?size=128");
+            builder.WithThumbnailUrl(GetThumbnailUrl(thumbnailUrl));
+            builder.WithImageUrl(GetScreenshotUrl(record));
+
+            builder.AddField("Level", level);
+            builder.AddField("Time", GetFormattedTime(record.Time!.Value));
+            builder.AddField("Splits",
+                string.Join(", ", record.Splits?.Select(x => GetFormattedTime(x)) ?? Array.Empty<string>()));
+
+            Result<Embed> embed = builder.Build();
+            if (!embed.IsSuccess)
+                return;
+
+            Result<IMessage> result = await channelApi.CreateMessageAsync(Settings.Channel.ID,
+                embeds: new List<IEmbed>()
+                {
+                    embed.Entity
+                });
+
+            if (!result.IsSuccess)
             {
-                embed.Entity
-            });
-
-        if (!result.IsSuccess)
-        {
-            logger.LogError("Failed to send message to Discord: {Error}", result.ToString());
+                logger.LogError("Failed to send message to Discord: {Error}", result.ToString());
+            }
         }
-        else
+        catch (Exception e)
         {
-            logger.LogInformation("Sent!");
+            logger.LogError(e, "Failed to send message to Discord");
         }
     }
 
