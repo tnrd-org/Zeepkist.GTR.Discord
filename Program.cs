@@ -62,7 +62,7 @@ internal class Program
             .UseSerilog((context, configuration) =>
             {
                 configuration
-                    .MinimumLevel.Debug()
+                    .MinimumLevel.Information()
                     .WriteTo.Console();
             })
             .AddDiscordService
