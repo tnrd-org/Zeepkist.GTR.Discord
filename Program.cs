@@ -8,6 +8,7 @@ using Remora.Discord.Hosting.Extensions;
 using Remora.Rest.Core;
 using Remora.Results;
 using Serilog;
+using TNRD.Zeepkist.GTR.Database;
 using TNRD.Zeepkist.GTR.Discord;
 using TNRD.Zeepkist.GTR.Discord.Commands;
 
@@ -77,6 +78,8 @@ internal class Program
                 (context, services) =>
                 {
                     services.Configure<DiscordOptions>(context.Configuration.GetSection("Discord"));
+                    
+                    services.AddNpgsql<GTRContext>(context.Configuration["Database:ConnectionString"]);
 
                     services.AddHttpClient();
                     services.Configure<DiscordGatewayClientOptions>(g => { });
