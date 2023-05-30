@@ -83,7 +83,10 @@ internal class DiscordMessageSender
 
             Result<Embed> embed = builder.Build();
             if (!embed.IsSuccess)
+            {
+                logger.LogError("Failed to build embed: {Error}", embed.ToString());
                 return;
+            }
 
             Result<IMessage> result = await channelApi.CreateMessageAsync(Settings.Channel.ID,
                 embeds: new List<IEmbed>()
@@ -94,6 +97,10 @@ internal class DiscordMessageSender
             if (!result.IsSuccess)
             {
                 logger.LogError("Failed to send message to Discord: {Error}", result.ToString());
+            }
+            else
+            {
+                logger.LogInformation("Sent message to Discord");
             }
         }
         catch (Exception e)
