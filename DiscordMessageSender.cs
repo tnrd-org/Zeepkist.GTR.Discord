@@ -93,10 +93,12 @@ internal class DiscordMessageSender
         builder.AddField("Splits",
             string.Join(", ", record.Splits?.Select(x => GetFormattedTime(x)) ?? Array.Empty<string>()));
 
+        logger.LogInformation("Creating embed");
         Result<Embed> embed = builder.Build();
         if (!embed.IsSuccess)
             return;
 
+        logger.LogError("Sending message to Discord");
         Result<IMessage> result = await channelApi.CreateMessageAsync(Settings.Channel.ID,
             embeds: new List<IEmbed>()
             {
@@ -106,6 +108,10 @@ internal class DiscordMessageSender
         if (!result.IsSuccess)
         {
             logger.LogError("Failed to send message to Discord: {Error}", result.ToString());
+        }
+        else
+        {
+            logger.LogInformation("Sent!");
         }
     }
 
