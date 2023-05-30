@@ -47,18 +47,32 @@ internal class DiscordMessageSender
         if (sentRecords.Contains(recordId.Id))
             return;
 
+        logger.LogInformation("Getting from DB");
+        
         Record? record = await context.Records.AsNoTracking()
             .Where(x => x.Id == recordId.Id)
             .FirstOrDefaultAsync();
 
+        logger.LogInformation("Found record: {Record}", record?.Id ?? -1);
+        
         if (record == null)
             return;
 
+        logger.LogInformation("Checking for WR");
+
         if (!record.IsWr)
+        {
+            logger.LogInformation("Not a wr");
             return;
+        }
+
+        logger.LogInformation("Checking for screenshot url");
 
         if (string.IsNullOrEmpty(record.ScreenshotUrl))
+        {
+            logger.LogInformation("No screenshot url");
             return;
+        }
 
         sentRecords.Add(record.Id);
 
