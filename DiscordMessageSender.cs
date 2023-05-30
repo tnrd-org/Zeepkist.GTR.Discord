@@ -97,14 +97,14 @@ internal class DiscordMessageSender
 
     private async Task<string> GetUsername(Record record)
     {
-        string json = await httpClient.GetStringAsync($"https://api.zeepkist-gtr.com/users/{record.User}");
+        string json = await httpClient.GetStringAsync($"https://api.dev.zeepkist-gtr.com/users/{record.User}");
         UserResponseModel? user = JsonConvert.DeserializeObject<UserResponseModel>(json);
         return user?.SteamName ?? "Unknown";
     }
 
     private async Task<(string level, string thumbnailUrl)> GetTrackString(Record record)
     {
-        string json = await httpClient.GetStringAsync($"https://api.zeepkist-gtr.com/levels/{record.Level}");
+        string json = await httpClient.GetStringAsync($"https://api.dev.zeepkist-gtr.com/levels/{record.Level}");
         LevelResponseModel? level = JsonConvert.DeserializeObject<LevelResponseModel>(json);
         return (level == null ? "Unknown" : $"{level.Name} by {level.Author}", level.ThumbnailUrl);
     }
