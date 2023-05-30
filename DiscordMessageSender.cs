@@ -18,12 +18,22 @@ internal class DiscordMessageSender
     private readonly IDiscordRestChannelAPI channelApi;
     private readonly HttpClient httpClient;
     private readonly GTRContext context;
+    private readonly ILogger<DiscordMessageSender> logger;
 
-    public DiscordMessageSender(IDiscordRestChannelAPI channelApi, HttpClient httpClient, GTRContext context)
+    private readonly HashSet<int> sentRecords;
+
+    public DiscordMessageSender(
+        IDiscordRestChannelAPI channelApi,
+        HttpClient httpClient,
+        GTRContext context,
+        ILogger<DiscordMessageSender> logger
+    )
     {
         this.channelApi = channelApi;
         this.httpClient = httpClient;
         this.context = context;
+        this.logger = logger;
+        sentRecords = new HashSet<int>();
     }
 
     public async void SendMessage(RecordId? recordId)
@@ -32,6 +42,9 @@ internal class DiscordMessageSender
             return;
 
         if (recordId == null)
+            return;
+
+        if (sentRecords.Contains(recordId.Id))
             return;
 
         Record? record = await context.Records.AsNoTracking()
@@ -46,6 +59,8 @@ internal class DiscordMessageSender
 
         if (string.IsNullOrEmpty(record.ScreenshotUrl))
             return;
+
+        sentRecords.Add(record.Id);
 
         string username = await GetUsername(record);
         (string? level, string? thumbnailUrl) = await GetTrackString(record);
@@ -73,6 +88,11 @@ internal class DiscordMessageSender
             {
                 embed.Entity
             });
+
+        if (!result.IsSuccess)
+        {
+            logger.LogError("Failed to send message to Discord: {Error}", result.ToString());
+        }
     }
 
     private async Task<string> GetUsername(Record record)

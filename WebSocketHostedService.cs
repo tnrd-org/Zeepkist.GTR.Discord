@@ -19,8 +19,8 @@ internal class WebSocketHostedService : IHostedService
 
     private void OnMessage(ResponseMessage responseMessage)
     {
-        RecordId? publishableRecord = JsonConvert.DeserializeObject<RecordId>(responseMessage.Text);
-        discordMessageSender.SendMessage(publishableRecord);
+        RecordId? recordId = JsonConvert.DeserializeObject<RecordId>(responseMessage.Text);
+        discordMessageSender.SendMessage(recordId);
     }
 
     /// <inheritdoc />
