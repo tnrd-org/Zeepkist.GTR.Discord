@@ -76,8 +76,6 @@ internal class DiscordMessageSender
 
         builder.AddField("Level", level);
         builder.AddField("Time", GetFormattedTime(record.Time!.Value));
-        builder.AddField("Splits",
-            string.Join(", ", record.Splits?.Select(x => GetFormattedTime(x)) ?? Array.Empty<string>()));
 
         Result<Embed> embed = builder.Build();
         if (!embed.IsSuccess)
